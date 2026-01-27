@@ -1,0 +1,25 @@
+{
+    "name": "portfolio-backend",
+    "version": "1.0.0",
+    "description": "Backend API for Tejaa Tharshini R's portfolio website",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "mongoose": "^8.0.3"
+    },
+    "devDependencies": {},
+    "keywords": [
+        "portfolio",
+        "api",
+        "express",
+        "mongodb"
+    ],
+    "author": "Tejaa Tharshini R"
+}
