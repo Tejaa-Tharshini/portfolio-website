@@ -131,4 +131,4 @@ MIT License - feel free to use this for your own portfolio!
 
 ---
 
-Made with ❤️ by Tejaa Tharshini R
+Made by Tejaa Tharshini R
