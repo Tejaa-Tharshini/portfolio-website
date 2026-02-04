@@ -3,38 +3,38 @@ import { FaGithub, FaLinkedin, FaEnvelope, FaPhone } from 'react-icons/fa';
 
 const links = [
     {
-        platform: 'Email',
-        username: 'tharshinitejaa@gmail.com',
+        name: 'Email',
+        description: 'tharshinitejaa@gmail.com',
         url: 'mailto:tharshinitejaa@gmail.com',
-        icon: <FaEnvelope size={24} />,
-        label: 'Send me a message',
+        icon: '📧',
+        color: '#6366f1',
     },
     {
-        platform: 'Phone',
-        username: '+91 8668183045',
+        name: 'Phone',
+        description: '+91 8668183045',
         url: 'tel:+918668183045',
-        icon: <FaPhone size={24} />,
-        label: 'Give me a call',
+        icon: '📱',
+        color: '#22c55e',
     },
     {
-        platform: 'GitHub',
-        username: 'Tejaa-Tharshini',
+        name: 'GitHub',
+        description: 'Tejaa-Tharshini',
         url: 'https://github.com/Tejaa-Tharshini',
-        icon: <FaGithub size={24} />,
-        label: 'View my code repositories',
+        icon: '💻',
+        color: '#333333',
     },
     {
-        platform: 'LinkedIn',
-        username: 'tejaa-tharshini-93a30b265',
+        name: 'LinkedIn',
+        description: 'Connect professionally',
         url: 'https://linkedin.com/in/tejaa-tharshini-93a30b265',
-        icon: <FaLinkedin size={24} />,
-        label: 'Connect professionally',
+        icon: '💼',
+        color: '#0077b5',
     },
 ];
 
 function Links() {
     return (
-        <section className="section pt-32">
+        <section className="section pt-32 relative">
             <div className="max-w-3xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-16">
@@ -49,17 +49,24 @@ function Links() {
                 {/* Links Grid */}
                 <div className="grid gap-4">
                     {links.map((link, index) => (
-                        <SocialLink key={index} link={link} />
+                        <SocialLink
+                            key={index}
+                            name={link.name}
+                            description={link.description}
+                            url={link.url}
+                            icon={link.icon}
+                            color={link.color}
+                        />
                     ))}
                 </div>
 
                 {/* Contact CTA */}
                 <div className="mt-16 text-center">
-                    <div className="glass-card rounded-xl p-8">
+                    <div className="glass-card rounded-2xl p-8">
                         <h3 className="font-display text-2xl font-bold text-white mb-4">
                             Let's Work Together! 🚀
                         </h3>
-                        <p className="text-dark-400 mb-6 max-w-lg mx-auto">
+                        <p className="text-gray-400 mb-6 max-w-lg mx-auto">
                             Whether you have a project in mind, want to collaborate, or just want
                             to say hi — I'd love to hear from you!
                         </p>
@@ -77,13 +84,13 @@ function Links() {
                 <div className="mt-8 flex justify-center gap-4 flex-wrap">
                     <button
                         onClick={() => navigator.clipboard.writeText('tharshinitejaa@gmail.com')}
-                        className="text-dark-400 hover:text-primary-400 text-sm transition-colors"
+                        className="text-gray-500 hover:text-primary-400 text-sm transition-colors"
                     >
                         📋 Copy Email
                     </button>
                     <button
                         onClick={() => navigator.clipboard.writeText('https://github.com/Tejaa-Tharshini')}
-                        className="text-dark-400 hover:text-primary-400 text-sm transition-colors"
+                        className="text-gray-500 hover:text-primary-400 text-sm transition-colors"
                     >
                         📋 Copy GitHub
                     </button>

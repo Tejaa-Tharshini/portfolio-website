@@ -1,37 +1,42 @@
-function ExperienceCard({ experience, isLeft = false }) {
+function ExperienceCard({ title, company, duration, description, technologies, type }) {
     return (
-        <div className={`flex gap-6 ${isLeft ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+        <div className="group relative">
+            {/* Timeline connector */}
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-500/50 to-transparent"></div>
+
             {/* Timeline dot */}
-            <div className="hidden md:flex flex-col items-center">
-                <div className="w-4 h-4 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 glow" />
-                <div className="w-0.5 h-full bg-gradient-to-b from-primary-500/50 to-transparent" />
-            </div>
+            <div className="absolute left-4 top-6 w-5 h-5 rounded-full bg-primary-500 border-4 border-dark-950 z-10 group-hover:scale-125 transition-transform"></div>
 
             {/* Card */}
-            <div className="flex-1 glass-card rounded-xl p-6 mb-8">
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+            <div className="ml-14 glass-card rounded-2xl p-6 mb-6">
+                {/* Header */}
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                     <div>
-                        <h3 className="font-display text-xl font-semibold text-white">
-                            {experience.role}
+                        <h3 className="font-display text-xl font-bold text-white group-hover:text-primary-400 transition-colors">
+                            {title}
                         </h3>
-                        <p className="text-primary-400 font-medium">{experience.company}</p>
+                        <p className="text-primary-400 font-medium">{company}</p>
                     </div>
-                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-accent-500/10 text-accent-400 border border-accent-500/20">
-                        {experience.duration}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="px-3 py-1 rounded-full text-xs bg-primary-500/10 text-primary-400 border border-primary-500/20">
+                            {type || 'Full-time'}
+                        </span>
+                        <span className="text-gray-500 text-sm">{duration}</span>
+                    </div>
                 </div>
 
-                <p className="text-dark-400 text-sm leading-relaxed mb-4">
-                    {experience.description}
+                {/* Description */}
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                    {description}
                 </p>
 
                 {/* Technologies */}
-                {experience.technologies && (
+                {technologies && technologies.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                        {experience.technologies.map((tech, index) => (
+                        {technologies.map((tech, index) => (
                             <span
                                 key={index}
-                                className="px-2 py-1 text-xs rounded bg-dark-700/50 text-dark-300"
+                                className="px-3 py-1 text-xs rounded-lg bg-dark-800 text-gray-400 border border-white/5"
                             >
                                 {tech}
                             </span>

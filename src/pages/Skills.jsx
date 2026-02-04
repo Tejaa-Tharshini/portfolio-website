@@ -46,7 +46,7 @@ const skillCategories = [
 
 function Skills() {
     return (
-        <section className="section pt-32">
+        <section className="section pt-32 relative">
             <div className="max-w-7xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-16">
@@ -61,9 +61,11 @@ function Skills() {
                 {/* Skills Grid */}
                 <div className="grid md:grid-cols-2 gap-8">
                     {skillCategories.map((category, index) => (
-                        <div key={index} className="glass-card rounded-xl p-6">
+                        <div key={index} className="glass-card rounded-2xl p-6">
                             <div className="flex items-center gap-3 mb-6">
-                                <span className="text-3xl">{category.icon}</span>
+                                <div className="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-2xl">
+                                    {category.icon}
+                                </div>
                                 <h3 className="font-display text-xl font-semibold text-white">
                                     {category.title}
                                 </h3>
@@ -71,7 +73,12 @@ function Skills() {
 
                             <div className="grid gap-3">
                                 {category.skills.map((skill, skillIndex) => (
-                                    <SkillBadge key={skillIndex} skill={skill} />
+                                    <SkillBadge
+                                        key={skillIndex}
+                                        name={skill.name}
+                                        icon={skill.icon}
+                                        level={skill.level}
+                                    />
                                 ))}
                             </div>
                         </div>
@@ -80,11 +87,11 @@ function Skills() {
 
                 {/* Additional Info */}
                 <div className="mt-16 text-center">
-                    <div className="glass-card rounded-xl p-8 max-w-3xl mx-auto">
+                    <div className="glass-card rounded-2xl p-8 max-w-3xl mx-auto">
                         <h3 className="font-display text-xl font-semibold text-white mb-4">
                             Always Learning 📚
                         </h3>
-                        <p className="text-dark-400">
+                        <p className="text-gray-400">
                             I'm constantly expanding my skill set. Currently exploring TypeScript,
                             Next.js, Docker, and cloud services like AWS. I believe in staying
                             curious and adapting to new technologies.

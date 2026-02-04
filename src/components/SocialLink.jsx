@@ -1,25 +1,33 @@
-import { FaExternalLinkAlt } from 'react-icons/fa';
-
-function SocialLink({ link }) {
+function SocialLink({ name, url, icon, color, description }) {
     return (
         <a
-            href={link.url}
+            href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="glass-card rounded-xl p-6 flex items-center gap-4 group hover:border-primary-500/30"
+            className="group glass-card rounded-2xl p-6 flex items-center gap-5 hover:border-primary-500/40 transition-all duration-300"
         >
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                {link.icon}
+            {/* Icon container */}
+            <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl transition-all duration-300 group-hover:scale-110"
+                style={{ backgroundColor: `${color}20` }}
+            >
+                {icon}
             </div>
 
+            {/* Content */}
             <div className="flex-1">
                 <h3 className="font-semibold text-white group-hover:text-primary-400 transition-colors">
-                    {link.platform}
+                    {name}
                 </h3>
-                <p className="text-dark-400 text-sm">{link.username || link.label}</p>
+                {description && (
+                    <p className="text-sm text-gray-500">{description}</p>
+                )}
             </div>
 
-            <FaExternalLinkAlt className="text-dark-500 group-hover:text-primary-400 transition-colors" />
+            {/* Arrow */}
+            <div className="text-gray-600 group-hover:text-primary-400 group-hover:translate-x-1 transition-all">
+                →
+            </div>
         </a>
     );
 }
