@@ -1,9 +1,10 @@
 import { FaGraduationCap, FaCode, FaHeart } from 'react-icons/fa';
-import { useScrollAnimation } from '../../hooks/useScrollAnimation';
+import { useScrollAnimation, useMouseParallax } from '../../hooks/useScrollAnimation';
 
 function AboutSection({ data, slideFrom = 'left' }) {
     const [sectionRef, isVisible] = useScrollAnimation({ threshold: 0.1 });
     const slideClass = slideFrom === 'left' ? 'slide-from-left' : 'slide-from-right';
+    const mousePos = useMouseParallax(0.03);
 
     return (
         <section
@@ -23,12 +24,30 @@ function AboutSection({ data, slideFrom = 'left' }) {
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    {/* Profile Image Section */}
+                    {/* Profile Image Section with Parallax */}
                     <div className={`relative transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-                        <div className="relative w-72 h-72 mx-auto">
-                            {/* Decorative circles */}
-                            <div className="absolute inset-0 rounded-full glass-panel rotate-6 scale-95 opacity-50" />
-                            <div className="absolute inset-0 rounded-full glass-panel -rotate-3 opacity-70" />
+                        <div
+                            className="relative w-72 h-72 mx-auto"
+                            style={{
+                                transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px)`,
+                                transition: 'transform 0.1s ease-out'
+                            }}
+                        >
+                            {/* Decorative circles with different parallax speeds */}
+                            <div
+                                className="absolute inset-0 rounded-full glass-panel rotate-6 scale-95 opacity-50"
+                                style={{
+                                    transform: `rotate(6deg) scale(0.95) translate(${mousePos.x * 1.5}px, ${mousePos.y * 1.5}px)`,
+                                    transition: 'transform 0.15s ease-out'
+                                }}
+                            />
+                            <div
+                                className="absolute inset-0 rounded-full glass-panel -rotate-3 opacity-70"
+                                style={{
+                                    transform: `rotate(-3deg) translate(${mousePos.x * 1}px, ${mousePos.y * 1}px)`,
+                                    transition: 'transform 0.12s ease-out'
+                                }}
+                            />
                             {/* Main photo circle */}
                             <div className="absolute inset-4 rounded-full bg-gradient-to-br from-primary-500/20 to-accent-500/20 glass overflow-hidden">
                                 {/* Profile Photo - Place your photo at public/profile.jpg */}
@@ -37,8 +56,9 @@ function AboutSection({ data, slideFrom = 'left' }) {
                                     alt={data?.name || "Profile Photo"}
                                     className="w-full h-full object-cover"
                                     style={{
-                                        transform: `scale(${data?.photoSettings?.zoom || 1})`,
-                                        objectPosition: `${data?.photoSettings?.positionX || 50}% ${data?.photoSettings?.positionY || 50}%`
+                                        transform: `scale(${data?.photoSettings?.zoom || 1}) translate(${mousePos.x * -0.3}px, ${mousePos.y * -0.3}px)`,
+                                        objectPosition: `${data?.photoSettings?.positionX || 50}% ${data?.photoSettings?.positionY || 50}%`,
+                                        transition: 'transform 0.08s ease-out'
                                     }}
                                     onError={(e) => {
                                         // Fallback to emoji if image not found

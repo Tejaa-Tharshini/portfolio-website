@@ -4,7 +4,6 @@ import AboutSection from '../components/sections/AboutSection';
 import ProjectsSection from '../components/sections/ProjectsSection';
 import SkillsSection from '../components/sections/SkillsSection';
 import ExperienceSection from '../components/sections/ExperienceSection';
-import ContactSection from '../components/sections/ContactSection';
 import LinksSection from '../components/sections/LinksSection';
 
 function SinglePage() {
@@ -19,7 +18,7 @@ function SinglePage() {
     }
 
     return (
-        <div className="relative overflow-x-hidden">
+        <div className="relative">
             {/* Hero - No slide, centered */}
             <HeroSection data={data?.profile} />
 
@@ -35,11 +34,8 @@ function SinglePage() {
             {/* Experience - Slide from RIGHT */}
             <ExperienceSection data={data?.experience} slideFrom="right" />
 
-            {/* Contact with Parallax - Slide from LEFT */}
-            <ContactSection data={data?.contact} slideFrom="left" />
-
-            {/* Links - Slide from RIGHT */}
-            <LinksSection data={data?.links} slideFrom="right" />
+            {/* Links / Contact - Slide from LEFT */}
+            <LinksSection data={data?.links} slideFrom="left" />
         </div>
     );
 }

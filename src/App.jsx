@@ -92,41 +92,6 @@ function ParallaxBackground() {
     );
 }
 
-// Parallax Container - wraps content with 3D perspective shift
-function ParallaxContent({ children }) {
-    const smoothPos = useGlobalParallax();
-
-    // Subtle rotation and translation for 3D effect
-    const rotateY = smoothPos.x * 1.5; // degrees
-    const rotateX = smoothPos.y * -1; // degrees (inverted for natural feel)
-    const translateX = smoothPos.x * 8; // pixels
-    const translateY = smoothPos.y * 5; // pixels
-
-    return (
-        <div
-            className="relative z-10"
-            style={{
-                perspective: '1200px',
-                perspectiveOrigin: '50% 50%'
-            }}
-        >
-            <div
-                style={{
-                    transform: `
-                        rotateY(${rotateY}deg) 
-                        rotateX(${rotateX}deg)
-                        translate3d(${translateX}px, ${translateY}px, 0)
-                    `,
-                    transformStyle: 'preserve-3d',
-                    transition: 'transform 0.05s ease-out'
-                }}
-            >
-                {children}
-            </div>
-        </div>
-    );
-}
-
 function MainLayout() {
     const [isLoading, setIsLoading] = useState(true);
 
@@ -140,12 +105,10 @@ function MainLayout() {
             <CustomCursor />
             <ParallaxBackground />
             <Navbar />
-            <ParallaxContent>
-                <main>
-                    <SinglePage />
-                </main>
-                <Footer />
-            </ParallaxContent>
+            <main className="relative z-10">
+                <SinglePage />
+            </main>
+            <Footer />
         </>
     );
 }

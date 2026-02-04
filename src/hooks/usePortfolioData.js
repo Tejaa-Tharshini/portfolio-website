@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { defaultPortfolioData, generateId } from '../utils/defaultData';
+import { generateId } from '../utils/defaultData';
 
 const API_URL = '/api/data';
 
@@ -15,43 +15,28 @@ export function usePortfolioData() {
             const response = await fetch(API_URL);
             if (!response.ok) throw new Error('Failed to fetch data');
             const jsonData = await response.json();
-
-            // If empty object (new file), use defaults
-            if (Object.keys(jsonData).length === 0) {
-                setData(defaultPortfolioData);
-                // Optionally save defaults to server immediately
-                saveToServer(defaultPortfolioData);
-            } else {
-                setData(jsonData);
-            }
+            setData(jsonData);
         } catch (err) {
             console.error('Error fetching data:', err);
             setError(err.message);
-            // Fallback to defaults on error
-            setData(defaultPortfolioData);
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // Save data to backend
+    // Save data to backend (writes to portfolio.json on server)
     const saveToServer = async (newData) => {
         setIsSaving(true);
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newData),
             });
-
             if (!response.ok) throw new Error('Failed to save data');
-            const result = await response.json();
-            console.log('Data saved:', result);
+            console.log('Data saved to server');
         } catch (err) {
             console.error('Error saving data:', err);
-            // Optionally show user error
         } finally {
             setIsSaving(false);
         }
@@ -65,7 +50,6 @@ export function usePortfolioData() {
     // Save function - updates local state and saves to server
     const saveData = useCallback((newData) => {
         setData(newData);
-        // Debounce or immediate save? Immediate for now to ensure consistency
         saveToServer(newData);
     }, []);
 
@@ -144,7 +128,7 @@ export function usePortfolioData() {
         updateSection('experience', newExperiences);
     }, [data, updateSection]);
 
-    // Education methods (inside about)
+    // Education methods
     const addEducation = useCallback((education) => {
         const newEducation = { ...education, id: generateId() };
         const newEducations = [...(data?.about?.education || []), newEducation];
@@ -185,14 +169,16 @@ export function usePortfolioData() {
         updateSection('footer', footer);
     }, [updateSection]);
 
-    // Site Settings methods (logo, favicon, site name)
+    // Site Settings methods
     const updateSiteSettings = useCallback((siteSettings) => {
         updateSection('siteSettings', siteSettings);
     }, [updateSection]);
 
     // Reset to defaults
-    const resetToDefaults = useCallback(() => {
-        saveData(defaultPortfolioData);
+    const resetToDefaults = useCallback(async () => {
+        const response = await fetch('/portfolio.json');
+        const defaults = await response.json();
+        saveData(defaults);
     }, [saveData]);
 
     // Export data
@@ -249,4 +235,3 @@ export function usePortfolioData() {
         importData
     };
 }
-

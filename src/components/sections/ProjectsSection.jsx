@@ -1,225 +1,211 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaGithub, FaExternalLinkAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
 import { useScrollAnimation } from '../../hooks/useScrollAnimation';
-import { ProximityField } from '../../hooks/useCursorField.jsx';
 
-function ProjectsSection({ data, slideFrom = 'right' }) {
+function ProjectsSection({ data }) {
     const [sectionRef, isVisible] = useScrollAnimation({ threshold: 0.1 });
-    const sliderRef = useRef(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [scrollLeft, setScrollLeft] = useState(0);
+    const containerRef = useRef(null);
+    const [scrollState, setScrollState] = useState({
+        progress: 0,
+        fixed: false,
+        bottom: false
+    });
     const [activeIndex, setActiveIndex] = useState(0);
 
-    // Physics state
-    const targetScroll = useRef(0);
-    const currentScroll = useRef(0);
-    const animationFrame = useRef(null);
-    const isHovering = useRef(false);
+    // One viewport per card + 1 for start/end buffer
+    const scrollHeightMultiplier = (data?.length || 1) + 1;
 
-    // Lerp function
-    const lerp = (start, end, factor) => start + (end - start) * factor;
-
-    // Initialize
     useEffect(() => {
-        if (sliderRef.current) {
-            targetScroll.current = sliderRef.current.scrollLeft;
-            currentScroll.current = sliderRef.current.scrollLeft;
-        }
-    }, []);
+        const handleScroll = () => {
+            if (!containerRef.current) return;
 
-    // Animation Loop for Smooth Inertia
-    useEffect(() => {
-        const animate = () => {
-            if (!sliderRef.current) return;
+            const rect = containerRef.current.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const containerHeight = rect.height;
+            const scrollableDist = containerHeight - viewportHeight;
 
-            // Smoothly interpolate current scroll to target
-            // If dragging, follow tightly. If released, ease out.
-            const ease = isDragging ? 0.2 : 0.08;
-            currentScroll.current = lerp(currentScroll.current, targetScroll.current, ease);
+            // Check if we are "inside" the container's scroll zone
+            const isInside = rect.top <= 0 && rect.bottom >= viewportHeight;
+            const isPast = rect.bottom < viewportHeight;
 
-            // Apply scroll
-            sliderRef.current.scrollLeft = currentScroll.current;
-
-            // Calculate active index based on scroll position
-            if (sliderRef.current) {
-                const center = currentScroll.current + sliderRef.current.clientWidth / 2;
-                // Assuming card width + gap approx 400px + 32px gap = 432px
-                // A better way is to find the element closest to center
-                const cardWidth = 450; // Approximated card width + gap
-                const index = Math.round((center - sliderRef.current.clientWidth / 2) / cardWidth);
-                setActiveIndex(Math.max(0, Math.min(index, (data?.length || 0) - 1)));
+            // Calculate progress 0 to 1
+            let progress = 0;
+            if (rect.top <= 0) {
+                progress = Math.abs(rect.top) / scrollableDist;
             }
+            progress = Math.max(0, Math.min(1, progress));
 
-            animationFrame.current = requestAnimationFrame(animate);
+            setScrollState({
+                progress,
+                fixed: isInside,
+                bottom: isPast
+            });
+
+            // Calculate active index
+            const totalCards = data?.length || 1;
+            const currentIndex = Math.min(
+                Math.floor(progress * totalCards),
+                totalCards - 1
+            );
+            setActiveIndex(currentIndex);
         };
 
-        animationFrame.current = requestAnimationFrame(animate);
-        return () => cancelAnimationFrame(animationFrame.current);
-    }, [isDragging, data]);
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleScroll);
+        handleScroll();
 
-    // Mouse Events for Drag
-    const handleMouseDown = (e) => {
-        setIsDragging(true);
-        setStartX(e.pageX - sliderRef.current.offsetLeft);
-        setScrollLeft(targetScroll.current); // Use target to prevent jump
-        isHovering.current = true;
-    };
-
-    const handleMouseLeave = () => {
-        setIsDragging(false);
-        isHovering.current = false;
-    };
-
-    const handleMouseUp = () => {
-        setIsDragging(false);
-        isHovering.current = true;
-    };
-
-    const handleMouseMove = (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        const x = e.pageX - sliderRef.current.offsetLeft;
-        const walk = (x - startX) * 2; // Scroll-fast multiplier
-        targetScroll.current = scrollLeft - walk;
-    };
-
-    const handleWheel = (e) => {
-        // Horizontal scroll with wheel
-        if (sectionRef.current && sectionRef.current.contains(e.target)) {
-            // Optional: capture wheel only if hovering slider
-        }
-    };
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleScroll);
+        };
+    }, [data]);
 
     return (
-        <section
-            id="projects"
-            className={`py-32 relative overflow-hidden bg-dark-900 ${isVisible ? 'visible' : ''}`}
-            ref={sectionRef}
+        /* Dummy container */
+        <div
+            ref={containerRef}
+            className="relative w-full"
+            style={{ height: `${scrollHeightMultiplier * 100}vh` }}
         >
-            <div className="max-w-[1920px] mx-auto px-6">
+            {/* Sticky Content - Transparent Background as requested */}
+            <div
+                className={`w-full h-screen overflow-hidden flex flex-col justify-center
+                ${scrollState.fixed ? 'fixed top-0 left-0 z-20' : 'absolute left-0 z-20'}
+                ${scrollState.bottom ? 'bottom-0 top-auto' : 'top-0'}
+                `}
+            >
                 {/* Header */}
-                <div className={`mb-16 ml-6 md:ml-12 lg:ml-24 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                    <p className="text-primary-400 text-sm font-medium tracking-widest uppercase mb-4">
+                <div
+                    ref={sectionRef}
+                    className={`absolute top-10 md:top-20 left-0 right-0 px-6 md:px-24 z-30 transition-all duration-700
+                    ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                >
+                    <p className="text-primary-400 text-sm font-medium tracking-widest uppercase mb-2">
                         Portfolio
                     </p>
-                    <h2 className="font-display text-5xl md:text-6xl font-bold text-white mb-6">
+                    <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-white">
                         Selected <span className="gradient-text">Projects</span>
                     </h2>
-                    <p className="text-gray-400 text-lg max-w-xl">
-                        Swipe to explore. Click to view code.
-                    </p>
                 </div>
 
-                {/* Slider Container */}
-                <div
-                    ref={sliderRef}
-                    className="flex gap-8 overflow-x-auto pb-20 pt-10 px-6 md:px-12 lg:px-24 snap-x snap-mandatory scrollbar-hide cursor-grab active:cursor-grabbing"
-                    onMouseDown={handleMouseDown}
-                    onMouseLeave={handleMouseLeave}
-                    onMouseUp={handleMouseUp}
-                    onMouseMove={handleMouseMove}
-                    style={{
-                        scrollBehavior: 'auto', // We handle smoothing via JS for mouse
-                        WebkitOverflowScrolling: 'touch' // Smooth native touch
-                    }}
-                >
+                {/* 3D Cylindrical Carousel */}
+                <div className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center perspective-1000">
                     {data?.map((project, index) => {
-                        const isActive = index === activeIndex;
+                        const floatIndex = scrollState.progress * ((data?.length || 1) - 0.01);
+                        const offset = index - floatIndex;
+
+                        // Visibility optimization
+                        if (Math.abs(offset) > 2) return null;
+
+                        // Refined 3D Logic - Smoother, less drastic
+                        const activeScale = 1;
+                        const inactiveScale = 0.9;
+
+                        // Use a Gaussian-like curve for scale to make it smooth
+                        const scale = activeScale - (Math.abs(offset) * (activeScale - inactiveScale));
+
+                        // Smoother depth and rotation
+                        const translateZ = Math.abs(offset) * -150;
+                        const rotateY = offset * -10;
+
+                        // Spread
+                        const translateX = offset * 55;
+
+                        // Z-Index for proper layering
+                        const zIndex = 100 - Math.abs(Math.round(offset * 10));
+
                         return (
                             <div
                                 key={project.id || index}
-                                className={`relative flex-shrink-0 w-[350px] md:w-[450px] snap-center transition-all duration-500 ease-out
-                                    ${isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-40 hover:opacity-100'}`}
+                                className="absolute w-[85vw] md:w-[60vw] max-w-4xl aspect-[16/9] md:aspect-[2/1]
+                                rounded-3xl shadow-2xl will-change-transform"
+                                style={{
+                                    transform: `
+                                        perspective(1000px)
+                                        translateX(${translateX}%)
+                                        translateZ(${translateZ}px) 
+                                        rotateY(${rotateY}deg)
+                                        scale(${Math.max(0, scale)})
+                                    `,
+                                    zIndex: zIndex,
+                                    // No opacity fade on the card container itself, fully visible
+                                    opacity: 1
+                                }}
                             >
-                                <a
-                                    href={project.githubUrl || '#'}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="group block h-full bg-dark-800/50 rounded-3xl overflow-hidden border border-white/5 hover:border-white/10 transition-all"
-                                    onClick={(e) => {
-                                        // Prevent click if dragging happened
-                                        if (isDragging) e.preventDefault();
-                                    }}
-                                >
-                                    {/* Image Area */}
-                                    <div className="relative aspect-[16/10] overflow-hidden bg-dark-950">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-dark-800 to-dark-900" />
+                                {/* Solid opaque background card */}
+                                <div className="relative w-full h-full bg-dark-800 rounded-3xl overflow-hidden border border-white/5 shadow-2xl group">
 
-                                        {/* Fallback Icon / Visual */}
-                                        <div className="absolute inset-0 flex items-center justify-center group-hover:scale-110 transition-transform duration-700">
-                                            <span className="text-6xl opacity-20 group-hover:opacity-40 transition-opacity">
-                                                {project.icon || '⚡'}
-                                            </span>
+                                    {/* Content Grid */}
+                                    <div className="relative h-full grid grid-cols-1 md:grid-cols-2">
+                                        {/* Image/Visual Side */}
+                                        <div className="relative h-full overflow-hidden bg-dark-900">
+                                            {/* Gradient Background for visual interest */}
+                                            <div className="absolute inset-0 bg-gradient-to-br from-primary-900/40 to-dark-900" />
+
+                                            <div className="absolute inset-0 flex items-center justify-center text-8xl text-primary-500/20 group-hover:scale-110 transition-transform duration-700">
+                                                {project.icon || '💻'}
+                                            </div>
+
+                                            {/* Links Overlay - Always visible on mobile, hover on desktop */}
+                                            <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 backdrop-blur-[2px]">
+                                                <a
+                                                    href={project.githubUrl || '#'}
+                                                    className="px-6 py-3 rounded-full bg-white text-dark-900 font-bold hover:scale-105 transition-transform flex items-center gap-2"
+                                                >
+                                                    <FaGithub /> Source
+                                                </a>
+                                                {(project.liveUrl) && (
+                                                    <a
+                                                        href={project.liveUrl}
+                                                        className="px-6 py-3 rounded-full border-2 border-white text-white font-bold hover:bg-white/10 hover:scale-105 transition-all flex items-center gap-2"
+                                                    >
+                                                        <FaExternalLinkAlt /> Live
+                                                    </a>
+                                                )}
+                                            </div>
                                         </div>
 
-                                        {/* Overlay & Action */}
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 
-                                                text-white font-medium flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                                                <FaGithub /> View Source
+                                        {/* Info Side - Solid Opaque */}
+                                        <div className="p-8 md:p-12 flex flex-col justify-center bg-dark-800">
+                                            <h3 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">
+                                                {project.title}
+                                            </h3>
+                                            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-8">
+                                                {project.description}
+                                            </p>
+
+                                            {/* Tags */}
+                                            <div className="flex flex-wrap gap-2">
+                                                {project.technologies?.map((tech, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className="px-4 py-1.5 rounded-full text-sm font-medium 
+                                                        bg-dark-900 border border-white/10 text-primary-300"
+                                                    >
+                                                        {tech}
+                                                    </span>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* Content */}
-                                    <div className="p-8">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h3 className="font-display text-2xl font-bold text-white group-hover:text-primary-400 transition-colors">
-                                                {project.title}
-                                            </h3>
-                                            <FaExternalLinkAlt className="text-gray-600 group-hover:text-white transition-colors" size={14} />
-                                        </div>
-
-                                        <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-3">
-                                            {project.description}
-                                        </p>
-
-                                        {/* Tech Tags */}
-                                        <div className="flex flex-wrap gap-2">
-                                            {project.technologies?.slice(0, 3).map((tech, i) => (
-                                                <span key={i} className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-gray-400 border border-white/5">
-                                                    {tech}
-                                                </span>
-                                            ))}
-                                            {project.technologies?.length > 3 && (
-                                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-gray-500 border border-white/5">
-                                                    +{project.technologies.length - 3}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </a>
+                                </div>
                             </div>
                         );
                     })}
-
-                    {/* Padding at end for centering last item */}
-                    <div className="w-12 md:w-24 flex-shrink-0" />
                 </div>
 
                 {/* Progress Indicators */}
-                <div className="flex justify-center gap-2 mt-8">
+                <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-3 z-30">
                     {data?.map((_, idx) => (
-                        <button
+                        <div
                             key={idx}
-                            onClick={() => {
-                                if (sliderRef.current) {
-                                    // Calculate target position for this index
-                                    // 482px is approx card width + gap (450 + 32)
-                                    // This is rough approximation, ideally we query the element
-                                    const cardWidth = window.innerWidth < 768 ? 382 : 482;
-                                    targetScroll.current = idx * cardWidth;
-                                }
-                            }}
-                            className={`h-1 rounded-full transition-all duration-300 
-                                ${idx === activeIndex ? 'w-8 bg-primary-500' : 'w-2 bg-white/20 hover:bg-white/40'}`}
+                            className={`h-1.5 rounded-full transition-all duration-300 shadow-lg
+                            ${idx === activeIndex ? 'w-12 bg-primary-500' : 'w-2 bg-white/20'}`}
                         />
                     ))}
                 </div>
             </div>
-        </section>
+        </div>
     );
 }
 
